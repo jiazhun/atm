@@ -1,367 +1,2288 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
+#include<string.h>
+#include<conio.h>
+#include<windows.h>
 struct Account
 {
-	char name[100];//姓名 
-	char tel[12];//电话 
-	char idCard[19];//身份证	
-	char username[19];//银行账号卡号
-	char password[7];//密码 
-	float money;//余额
-	struct Account * next; //下一个账户结点的地址 
+
+    char name[100];//姓名
+    char tel[12];//电话
+    char idCard[19];//身份证
+    char username[19];//银行账号卡号
+    char password[7];//密码
+    float money;//余额
+    char yinhang[10];
+    char zhuangtai[10];
+
+    struct Account * next; //下一个账户结点的地址
 };
 typedef struct Account Account;
+float roi;//利率
+float timeMoney;//ATM机的余额
+int interestTime=0;
+int language=10;
+Account * head=NULL;//指向头结点
+Account * tail=NULL;//指向尾结点
+struct Account abc;///用于操作
+struct Account nnn;///用于转账操作
+char buffer [128];//时间
+char zzz[20];
+char zzz1[200];
+char record1[200];
+char ch;
+char a1[10]="建设银行";
+char a2[10]="农业银行";
+void n(int z)
+{
+    int i=0,j=0,k=0,flag=1,m=0;
+    for(i=0; i<=z; i++)
+    {
+        if(m==0)
+        {
+            m++;
+            if(language==2)
+            {
+                printf("\n温馨提示：请注意观察四周环境\n");
+                printf("----->按 * 显示当前密码,再次按 * 隐藏密码\n\n");
+                printf("----->按 enter 清除全部重新输入\n\n");
+                printf("----->按 / 退出输入\n\n");
+                printf("----->输入%d位后按 *  enter / 之外任意键确认密码\n请输入密码",z);
+            }
+            else
+            {
+                printf("\nWarm Tip: Please pay attention to the surrounding environment.\n");
+                printf("----->Press * to display the current password, and press * again to hide the password.\n\n");
+                printf("----->Press enter to clear all re-entries.\n\n");
+                printf("----->Press/Exit Input\n\n");
+                printf("----->Enter %d digits and press any key except * enter / to confirm the password \n please enter the password.",z);
+            }
 
-Account * head=NULL;//指向头结点 
-Account * tail=NULL;//指向尾结点 
-struct Account abc;///用于操作 
-struct Account nnn;///用于操作 
+        }
+        zzz[i]=getch();
+        system("cls");
+        if(language==2)
+        {
+            printf("\n温馨提示：请注意观察四周环境\n");
+            printf("----->按 * 显示当前密码,再次按 * 隐藏密码\n\n");
+            printf("----->按 enter 清除全部重新输入\n\n");
+            printf("----->按 / 退出输入\n\n");
+            printf("----->输入%d位后按 *  enter / 之外任意键确认密码\n请输入密码",z);
+        }
+        else
+        {
+            printf("\nWarm Tip: Please pay attention to the surrounding environment.\n");
+            printf("----->Press * to display the current password, and press * again to hide the password.\n\n");
+            printf("----->Press enter to clear all re-entries.\n\n");
+            printf("----->Press/Exit Input\n\n");
+            printf("----->Enter %d digits and press any key except * enter / to confirm the password \n please enter the password.",z);
+        }
+        if(zzz[i]=='/'||zzz[i]=='\r'||zzz[i]=='\b'||zzz[i]=='*')
+        {
+            if(zzz[i]=='/') break;//   /户号
+            if(zzz[i]=='\b')
+            {
+                k=i-1;
+                if(i<1) i--;
+                else i-=2;
+                for(j=0; j<k; j++)
+                {
+                    printf("*");
+                }
+            }
+            if(zzz[i]=='\r')//此处限制1-9
+            {
+                i=0;
+                continue;
+            }
+            if(zzz[i]=='*')
+            {
+                if(i==0)
+                {
+                    i--;
+                    continue;
+                }
+                k=i+1;
+                flag++;
+                if(flag%2==0)
+                {
+                    for(j=0; j<i; j++)
+                        printf("%c",zzz[j]);
+                }
+                if(flag%2==1)
+                {
+                    for(j=0; j<k-1; j++)
+                    {
+                        printf("*");
+                    }
+                }
+                i--;
+                k--;
+            }
+        }
+        else if(zzz[i]>'9'||zzz[i]<'0')
+        {
+            i=-1;
+            if(language==2) printf("只能输入1-9的数字,请重新输入\n");
+            else printf("You can only enter numbers from 1-9, please re-enter them\n");
+            continue;
+        }
+        else
+        {
+            k=i+1;
+            for(j=0; j<k; j++)
+            {
+                if(j<z) printf("*");
+            }
+        }
+        if(language==1)
+        {
+            if(i<z-1) printf("\nThe %d bit has been entered, and the %d bit is also entered.",i+1,5-i);
+            if(i==z-1) printf("\nPress any key other than * enter / to confirm the password");
+            if(i==z) printf("\nEntered.");
+        }
+        else
+        {
+            if(i<z-1) printf("\n已输入%d位，还需输入%d位。",i+1,5-i);
+            if(i==z-1) printf("\n按 *  enter / 之外任意键确认密码");
+            if(i==z) printf("\n已输入完毕。");
+        }
 
-//加载成功返回1，否则返回0 
+    }
+    zzz[z]='\0';
+//	puts(zzz);
+}
+
+
+//加载成功返回1，否则返回0
 int loadData()
 {
-	FILE* fp=fopen("./atm.txt","r");
-	if(fp==NULL)
-	{
-		return 0;	
-	} 
-	else
-	{
-		while(!feof(fp))
-		{
-			//创建结点
-			Account * newNode=(Account *)malloc(sizeof(Account)); 
-			//结点初始化
-			newNode->next=NULL;
-			fscanf(fp,"%s %s %s %s %s %f\n",newNode->name,newNode->tel,newNode->idCard,newNode->username,newNode->password,&newNode->money); 
-			//添加结点到链表
-			if(head==NULL)
-			{
-				head=newNode;
-				tail=newNode;	
-			} 
-			else
-			{
-				tail->next=newNode;
-				tail=newNode; 
-			}
-		}
-		fclose(fp);
-		return 1;
-	}
-} 
-int bbb()//开户 
+    int i=0;
+    char s[100];
+    FILE* fp=fopen("./atm.txt","r");
+    if(fp==NULL)
+    {
+        fclose(fp);
+        return 0;
+    }
+    else
+    {
+
+        while(!feof(fp))
+        {
+            //创建结点
+            Account * newNode=(Account *)malloc(sizeof(Account));
+            //结点初始化
+            newNode->next=NULL;
+            fscanf(fp,"%s %s %s %s %s %f %s %s\n",newNode->name,newNode->tel,newNode->idCard,newNode->username,newNode->password,&newNode->money,newNode->yinhang,newNode->zhuangtai);
+            //		printf("%s %s %s %s %s %f %s %s\n",newNode->name,newNode->tel,newNode->idCard,newNode->username,newNode->password,newNode->money,newNode->yinhang,newNode->zhuangtai); 			//添加结点到链表
+            //添加结点到链表
+            if(head==NULL)
+            {
+                head=newNode;
+                tail=newNode;
+            }
+            else
+            {
+                tail->next=newNode;
+                tail=newNode;
+            }
+        }
+
+        return 1;
+    }
+    fclose(fp);
+}
+int speakread(char buf[])//语音朗读
 {
-	int i=0;
-	srand((unsigned)time(NULL)); 
-	Account * newNode=(Account *)malloc(sizeof(Account)); 
-			//结点初始化
-		newNode->next=NULL;
-		printf("请输入姓名：\n"); 
-		scanf("%s",newNode->name);
-		fflush(stdin);
-		printf("请输入身份证：\n");
-		scanf("%s",newNode->idCard); 
-		fflush(stdin);
-		printf("请输入电话：\n");
-		scanf("%s",newNode->tel); 
-		fflush(stdin);
-	
-		fflush(stdin);
-		for(i=0;i<18;i++)
-		{
-			newNode->username[i]=rand()%10+'0';
-		}
-		newNode->username[18]='\0';
-		printf("正在为你生成卡号。\n");
-		printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
-		printf("\n");
-		for(i=0;i<11;i++)
-		{
-			Sleep(100) ;
-			printf("\\\\");
-		}
-		fflush(stdin);
+    FILE*fq;
+    fq =fopen("voice.vbs","w");
+    if(fq!=NULL)
+    {
+        fprintf(fq,"CreateObject(\"SAPI.Spvoice\").Speak\"%s\"",buf);//  CreateObject("SAPI.SpVoice").Speak
+        fclose(fq);
+        system("voice.vbs");
+        system("del voice.vbs");
+    }
 
-	for(i=0;i<18;i++) printf("%c",newNode->username[i]);
-	char re[7];
-	while(1)
-	{
-	newNode->password[6]='\0';
-	printf("\n请输入密码：\n");
-	fflush(stdin);
+    return 0;
+}
+int savetime(long int interestTime)
+{
+    FILE *fp=fopen("./time.txt","w");
+    fprintf(fp,"%ld\n",interestTime);
+    fprintf(fp,"%f\n",roi);
+    fprintf(fp,"%f\n",timeMoney);
 
-	for(i=0;i<6;i++) 
-	{
-		newNode->password[i]=getch(); 
-		printf("*");
-	}
-	fflush(stdin);
-	printf("\n再次验证密码\n");
-	
-	for(i=0;i<6;i++)
-	{
-	re[i]=getch(); 
-	printf("*");
-	}
-	fflush(stdin);
-	if(strcmp(newNode->password,re)==0) 
-	{
-		printf("\n添加成功\n");
-		system("pause");
-		break;//两次密码相同则退出循环 
-	}
-	else printf("\n两次密码不相同，请重新输入\n");
-		
-	}	
-	newNode->money=0.00f;	 
-			//添加结点到链表
-	if(head==NULL)
-	{
-    	head=newNode;
-		tail=newNode;	
-	} 
-	else
-	{
-		tail->next=newNode;
-		tail=newNode; 
-	}
-		
-	return 0;
+    fclose(fp);
+
+}
+int timemoney()
+{
+    char ch=0;
+    float ch1;
+    printf("mon=%f\nroi=%f\n",timeMoney,roi);
+    printf("当前ATM余额为：%.2f\n",timeMoney);
+    printf("按1取出ATM中的纸币\n按2添加纸币\n");
+    scanf("%c",&ch);
+    fflush(stdin);
+    printf("请输入金额；");
+    scanf("%f",&ch1);
+    fflush(stdin);
+//	printf("%f\n%f\n",timeMoney-ch1,timeMoney+ch1);
+    if(((timeMoney-ch1)<0&&ch=='1')||((timeMoney-ch1)>100000&&ch=='2'))
+    {
+        printf("ATM中的纸币只能为0-100000\n操作失败\n");
+        return 0;
+    }
+    if(ch=='1')
+    {
+        timeMoney-=ch1;
+        printf("成功取出%f纸币\n",ch1);
+    }
+    if(ch=='2')
+    {
+        timeMoney+=ch1;
+        printf("成功添加%f纸币\n",ch1);
+    }
+    printf("mon=%f\nroi=%f\n",timeMoney,roi);
+    FILE *fp=fopen("./time.txt","w");
+    fprintf(fp,"%ld\n",interestTime);
+    fprintf(fp,"%f\n",roi);
+    fprintf(fp,"%f\n",timeMoney);
+    printf("mon=%f\nroi=%f\n",timeMoney,roi);
+    fclose(fp);
+    return 0;
+}
+int lixi()
+{
+
+    time_t now;
+    time(&now);
+    Account *curp=head;
+    long int i=0,j=0;
+    char bbb[200];
+    char roi1[20];
+    char mon[20] ;
+    FILE *fp1=fopen("./time.txt","r");
+    if(fp1==NULL)
+    {
+        printf("!!!!!!!!!!!!!\n");
+        fclose(fp1);
+        return 0;
+    }
+    fgets(bbb,200,fp1);
+    interestTime=(long int)(atof(bbb));
+    fgets(roi1,20,fp1);
+    roi=atof(roi1);
+    fgets(mon,20,fp1);
+    timeMoney=atof(mon);//余额
+    fclose(fp1);
+    if(timeMoney<1000)
+    {
+        printf("当前ATM余额不足,可能不能满足你的取款业务\n\n");
+        printf("The current ATM balance is insufficient and may not be able to meet your withdrawal business\n\n");
+    }
+    if(timeMoney>99000)
+    {
+        printf("当前ATM纸币过多，肯=可能不能满足你的存款业务\n\n");
+        printf("There are too many current ATM notes, Ken = may not be able to meet your deposit business\n\n");
+    }
+
+    i=(now-interestTime)/86400;
+
+    if(i>0)
+    {
+        interestTime=86400*i+interestTime;
+        while(curp!=NULL)
+        {
+            for(j=0; j<i; j++)
+            {
+                curp->money=curp->money*(1+roi);
+            }
+
+            curp=curp->next;
+        }
+        FILE *fp=fopen("./time.txt","w");
+        fprintf(fp,"%ld\n",interestTime);
+        fprintf(fp,"%f\n",roi);
+        fprintf(fp,"%f\n",timeMoney);
+        fclose(fp);
+
+
+    }
+
+    return 0;//1654780821
 }
 
+int addATM(float addmoney,int a)//1+,2-
+{
+    char add[50];
+    char bbb[50];
+    char roi1[50];
+    int i=0;
+    FILE *fp1=fopen("./time.txt","r");
+    if(fp1==NULL)
+    {
+        printf("!!!!!!!!!!!!!\n");
+        fclose(fp1);
+        return 0;
+    }
+    fgets(bbb,200,fp1);
+    interestTime=(long int)(atof(bbb));
+    fgets(roi1,20,fp1);
+    roi=atof(roi1);
+    fgets(add,20,fp1);
+    timeMoney=atof(add);//余额
+    fclose(fp1);
+    if(a==1)
+    {
+        if(timeMoney+addmoney<=100000) timeMoney=timeMoney+addmoney;
+        else printf("ATM纸币过多！！！！！暂时不能进行该功能\n");
+        i=1;
+    }
+
+    if(a==2)
+    {
+        if(timeMoney-addmoney>=0) timeMoney=timeMoney-addmoney;
+        else printf("ATM纸币不足！！！！！暂时不能进行该功能\n");
+        i=1;
+    }
+
+    FILE *fp=fopen("./time.txt","w");
+    fprintf(fp,"%ld\n",interestTime);
+    fprintf(fp,"%f\n",roi);
+    fprintf(fp,"%f\n",timeMoney);
+    fclose(fp);
+    return i;
+}
+int bbb()//开户
+{
+    int i=0,j=0;
+    int a;
+    int sum;
+    char years[9];
+    time_t timep;
+    struct tm *p;
+    time (&timep);
+    p=gmtime(&timep);
+    p->tm_hour+=8;
+    srand((unsigned)time(NULL));
+    Account * newNode=(Account *)malloc(sizeof(Account));
+    //结点初始化
+    Account *curp=head;
+    newNode->next=NULL;
+    if(language==2)
+    {
+        int show();
+
+        show();
+
+        printf("\n继续操作则自动同意本协议\n");
+
+        while(1)
+        {
+            printf("请选择银行类别:\n按 1 建设银行\n按 2 农业银行\n");
+            a=getch();
+            printf("%c\n",a);
+            if(a=='1'||a=='2')
+            {
+                if(a=='1')
+                {
+                    strcpy(newNode->yinhang,a1);
+                }
+                else
+                {
+                    strcpy(newNode->yinhang,a2);
+                }
+                break;
+            }
+            else printf("你只能输入1或者2\n");
+        }
+
+
+        printf("请输入姓名：\n");
+        scanf("%s",newNode->name);
+        fflush(stdin);
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,2);//1卡号，2身份，3电话
+        strcpy(newNode->idCard,zzz);
+        for(i=6,j=0; i<14; i++)
+        {
+            years[j]=newNode->idCard[i];
+            j++;
+        }
+        puts(years);
+        system("pause>nul");
+        a=(int)(atoi(years));
+        sum=(1900+p->tm_year)*10000+(1+p->tm_mon)*100+p->tm_mday;
+
+        if((sum-a)<160000)
+
+        {
+            printf("该身份证未满16或者不符合要求，不能办理银行卡\n");
+            system("pause");
+            return 0;
+        }
+
+
+
+        fflush(stdin);
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(11,3);//1卡号，2身份，3电话
+        strcpy(newNode->tel,zzz);
+
+        fflush(stdin);
+
+        int flag=0;
+        while(1)
+        {
+            for(i=0; i<18; i++)
+            {
+                newNode->username[i]=rand()%10+'0';
+            }
+            while(curp!=NULL)
+            {
+                if(strcmp(newNode->username,curp->username)==0)
+                {
+                    flag=1;
+                }
+                else curp=curp->next;
+            }
+            if(flag==0) break;
+            else
+            {
+                flag=1;
+            }
+        }
+
+        newNode->username[18]='\0';
+        printf("正在为你生成卡号。\n");
+        printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+        printf("\n");
+        for(i=0; i<11; i++)
+        {
+            Sleep(200);
+            printf("\\\\");
+        }
+        fflush(stdin);
+        printf("\n");
+        for(i=0; i<18; i++) printf("%c",newNode->username[i]);
+        char re[7];
+        while(1)
+        {
+            newNode->password[6]='\0';
+            printf("\n请输入密码：\n");
+            fflush(stdin);
+            n(6);
+            for(i=0; i<6; i++)
+            {
+                newNode->password[i]=zzz[i];
+
+            }
+            fflush(stdin);
+            system("cls");
+            printf("\n再次验证密码\n");
+
+            n(6);
+            for(i=0; i<6; i++)
+            {
+                re[i]=zzz[i];
+
+            }
+            fflush(stdin);
+            if(strcmp(newNode->password,re)==0)
+            {
+                printf("\n添加成功\n");
+                system("pause");
+                break;//两次密码相同则退出循环
+            }
+            else printf("\n两次密码不相同，请重新输入\n");
+
+        }
+    }
+    if(language==1)
+    {
+        while(1)
+        {
+            printf("Please select a bank type: \nPress 1 Construction Bank \nPress 2 Agricultural Bank.\n");
+            a=getch();
+            printf("%c\n",a);
+            if(a=='1'||a=='2')
+            {
+                if(a=='1')
+                {
+                    strcpy(newNode->yinhang,a1);
+                }
+                else
+                {
+                    strcpy(newNode->yinhang,a2);
+                }
+                break;
+            }
+            else printf("You can only enter 1 or 2.\n");
+        }
+
+
+        printf("Please enter your name：\n");
+        scanf("%s",newNode->name);
+        fflush(stdin);
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,2);//1卡号，2身份，3电话
+        strcpy(newNode->idCard,zzz);
+        for(i=6,j=0; i<14; i++)
+        {
+            years[j]=newNode->idCard[i];
+            j++;
+        }
+
+        a=(int)(atoi(years));
+        sum=(1900+p->tm_year)*10000+(1+p->tm_mon)*100+p->tm_mday;
+
+        if((sum-a)<160000)
+
+        {
+            printf("The ID card is less than 16 or does not meet the requirements and cannot be processed for a bank card.\n");
+            system("pause");
+            return 0;
+        }
+
+
+
+        fflush(stdin);
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(11,3);//1卡号，2身份，3电话
+        strcpy(newNode->tel,zzz);
+        fflush(stdin);
+        int flag=0;
+        while(1)//生成不重复的卡号
+        {
+            for(i=0; i<18; i++)
+            {
+                newNode->username[i]=rand()%10+'0';
+            }
+            while(curp!=NULL)
+            {
+                if(strcmp(newNode->username,curp->username)==0)
+                {
+                    flag=1;
+                }
+                else curp=curp->next;
+            }
+            if(flag==0) break;
+            else
+            {
+                flag=1;
+            }
+        }
+        newNode->username[18]='\0';
+        printf("Generating card number for you\n");
+        printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+        printf("\n");
+        for(i=0; i<11; i++)
+        {
+            Sleep(200) ;
+            printf("\\\\");
+        }
+        fflush(stdin);
+        printf("\n");
+        for(i=0; i<18; i++) printf("%c",newNode->username[i]);
+        char re[7];
+        while(1)
+        {
+            newNode->password[6]='\0';
+            printf("\nPlease enter a password：\n");
+            fflush(stdin);
+            n(6);
+            for(i=0; i<6; i++)
+            {
+                newNode->password[i]=zzz[i];
+
+            }
+            fflush(stdin);
+            system("cls");
+            printf("\nVerify the password again.\n");
+
+            n(6);
+            for(i=0; i<6; i++)
+            {
+                re[i]=zzz[i];
+
+            }
+            fflush(stdin);
+            if(strcmp(newNode->password,re)==0)
+            {
+                printf("\nAdded successfully.\n");
+                system("pause");
+                break;//两次密码相同则退出循环
+            }
+            else printf("\nTwo passwords are different, please re-enter.\n");
+
+        }
+    }
+    newNode->money=0.00f;
+    strcpy(newNode->zhuangtai,"normal");
+    //添加结点到链表
+    if(head==NULL)
+    {
+        head=newNode;
+        tail=newNode;
+    }
+    else
+    {
+        tail->next=newNode;
+        tail=newNode;
+    }
+
+    return 0;
+}
+void lossCard()//
+{
+    char Card[30];
+    char lossPass[7];
+    char lossID[20];
+    char very;
+    int flag=0;
+    void saveDate();
+    Account *curp=head;
+    if(language==2)
+    {
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                printf("你需要验证身份信息\n");
+
+                printf("请输入密码\n");
+                n(6);
+                fflush(stdin);
+                if(strcmp(zzz,curp->password)==0)
+                {
+
+                    inputmassgage(18,2);//1卡号，2身份，3电话
+                    strcpy(lossID,zzz);
+
+                    fflush(stdin);
+                    if(strcmp(lossID,curp->idCard)==0)
+                    {
+                        printf("是否确认挂失？\n\n");
+                        printf("按 1 确认挂失\n\n");
+                        printf("按 其他任意键 取消挂失并退出\n\n");
+                        printf("请选择你的操作\n");
+                        scanf("%c",&very);
+                        if(very=='1')
+                        {
+
+                            printf("挂失成功，\n");
+                            strcpy(curp->zhuangtai,"Loss");
+                            saveDate();
+                            break ;
+                        }
+                        else
+                        {
+                            printf("已取消挂失\n");
+                        }
+
+                    }
+                }
+                break ;
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("该卡号不存在\n");
+        }
+    }
+    else
+    {
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                printf("You need to verify your identity\n");
+
+                printf("Please enter a password\n");
+                n(6);
+                fflush(stdin);
+                if(strcmp(zzz,curp->password)==0)
+                {
+                    inputmassgage(18,2);//1卡号，2身份，3电话
+                    strcpy(lossID,zzz);
+                    fflush(stdin);
+                    if(strcmp(lossID,curp->idCard)==0)
+                    {
+                        printf("Do you want to report the loss?\n\n");
+                        printf("Press 1 to confirm the loss\n\n");
+                        printf("Press Any Other Key to cancel the loss report and exit\n\n");
+                        printf("请选择你的操作\n");
+                        scanf("%c",&very);
+                        if(very=='1')
+                        {
+
+                            printf("Report loss success，\n");
+                            strcpy(curp->zhuangtai,"Loss");
+                            saveDate();
+                            break ;
+                        }
+                        else
+                        {
+                            printf("The loss report has been canceled\n");
+                        }
+
+                    }
+                }
+                break ;
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("The card number does not exist\n");
+        }
+    }
+    system("pause");
+
+}
 int printLinkedList()
 {
-	Account *curp=head;
-	while (curp!= NULL)
-	{
-		printf("%s\t%s\t%s\t%s\t%s\t%.2f\n",curp->name,curp->tel,curp->idCard,curp->username,curp->password,curp->money); 
-		curp=curp->next;
-	}
-	return 0;	
+    Account *curp=head;
+    while (curp!= NULL)
+    {
+        printf("%s\t%s\t%s\t%s\t%s\t%.2f\n",curp->name,curp->tel,curp->idCard,curp->username,curp->password,curp->money);
+        curp=curp->next;
+    }
+    return 0;
 }
 
-void saveDate()
+void saveDate()//保存数据
 {
-	FILE* fp=fopen("./atm.txt","w");
-	if(fp==NULL)
-	{
-			
-	} 
-	Account *curp=head;
-	while (curp!= NULL)
-	{
-		fprintf(fp,"%s\t%s\t%s\t%s\t%s\t%.2f\n",curp->name,curp->tel,curp->idCard,curp->username,curp->password,curp->money); 
-		curp=curp->next;
-	}
-	fclose(fp);	
+    lixi();
+    FILE* fp=fopen("./atm.txt","w");
+    if(fp==NULL)
+    {
+
+    }
+    Account *curp=head;
+    while (curp!= NULL)
+    {
+
+        fprintf(fp,"%s\t%s\t%s\t%s\t%s\t%.2f\t%s\t%s\n",curp->name,curp->tel,curp->idCard,curp->username,curp->password,curp->money,curp->yinhang,curp->zhuangtai);
+        //printf("%s\t%s\t%s\t%s\t%s\t%.2f\t%s\t%s\n",curp->name,curp->tel,curp->idCard,curp->username,curp->password,curp->money,curp->yinhang,curp->zhuangtai);
+        curp=curp->next;
+    }
+    fclose(fp);
 }
+
 
 int aaa()
 {
-	printf("Press 1, English Service\n");
-	printf("按2，中文服务\n");
-	int language;
-	while(1)
-	{
-		scanf("%d",&language);
-		fflush(stdin);
-		if(language==1||language==2) break;//限制只能输入1和2.否则报错重新输入 
-		else printf("我不理解请重新输入\n");
-	}
-	if(language==1)
-	{
-		; //显示文中菜单 880755283784188101
-	}
-	else if(language==2)
-	{
-		; //显示英文菜单 
-	}
-	return 0;
+    int administrator();
+    int i=10;
+    void showMenuChinese();
+    char a[100]="请选择中英文服务，按1进行英文服务，按2进行中文服务,Press one, English Service" ;
+    printf("=====================================\n");
+    printf("||		ATM                ||\n");
+    printf("=====================================\n");
+    printf("||	Press 1, English Service   ||\n");
+    printf("||	按2，中文服务              ||\n");
+    printf("=====================================\n");
+    i=speakread(a);
+    fflush(stdin);
+
+
+    while(1)
+    {
+        scanf("%d",&language);
+        fflush(stdin);
+        if(language==1||language==2||language==111111) break;//限制只能输入1和2.否则报错重新输入
+        else printf("抱歉，我不理解，请重新输入\nSorry, I don't understand, please re-enter.\n");
+    }
+    if(language==1||language==2)
+    {
+        showMenuChinese(); //显示文中菜单 880755283784188101
+    }
+
+    else
+    {
+        administrator();//管理员界面
+    }
+    return 0;
 }
 
- int signIn()//登录 
+
+
+int administrator()//管理员界面
 {
-	char zhanghao[19];
-	char mima[7];
-	int i=0,j=0,k=0;
-	Account *curp=head;
-	while(j<3)
-	{
-		printf("请输入账号：");
-		scanf("%s",&zhanghao);
-		fflush(stdin);
-		curp=head;
-		while (curp!= NULL)
-		{
-			if(strcmp(curp->username,zhanghao)==0)
-			{
-				k=1;
-				printf("请输入密码：");
-				for(i=0;i<6;i++)
-				{
-					mima[i]=getch(); 
-					printf("*");
-				}
-				j++;
-				if(j>=3)
-				{
-				
-					printf("冻结\n");
-					break;
-				}
-				if(strcmp(curp->password,mima)==0)
-				{
-					
-					printf("\n登录成功！\n");
-					abc=*curp;
-				
-					sininOpert();
-					
-					break;
-				}
-			}	
-		
-			
-			
-			else curp=curp->next;
-	
-		}
-		if(k==0)
-		{ 
-			 printf("账号不存在\n");
-			 continue;
-		} 
-		if(j==1)
-	
-		 break;
-	}
-	
-	system("pause");
-	return 0;
+
+
+    char a;
+    float roi2;
+    lixi();//计算利息
+    while(1)
+    {
+
+        system("cls");
+        printf("欢迎进入管理员界面\n");
+        printf("请选择你的操作：\n") ;
+        printf("1：调整利率\n");
+        printf("2：查询ATM余额\n");
+        printf("3：向ATM中放入现金或者取出现金\n");
+        printf("4：关闭ATM\n");
+        printf("5：退出管理员界面\n");
+        printf("2：查询取放记录\n");
+        printf ("当前日利率：%f\n",roi);
+        printf("请输入你想进行的操作");
+
+        scanf("%c",&a);
+        fflush(stdin);
+        switch(a)
+        {
+        case '1':
+
+            printf("\n请输入利率：");
+            scanf("%f",&roi);
+            FILE* fp=fopen("./time.txt","w");
+            if(fp==NULL)
+            {
+                printf("错误\n");
+                return 0;
+            }
+
+
+            fprintf(fp,"%ld\n",interestTime);
+            fprintf(fp,"%f\n",roi);
+            fprintf(fp,"%f\n",timeMoney);
+
+            printf("\n利率成功更改为%f！！！！！\n",roi);
+
+            system("pause");
+            fclose(fp);
+            break;
+        case '2':
+            printf("余额为：%f\n",timeMoney);
+            system("pause");
+
+            break;
+        case '3':
+            timemoney() ;
+            break;
+        case '5':
+            system("cls");
+            aaa();
+            break;
+        }
+    }
+
 }
-int zhuanzhang()
+
+int sininother()
 {
-	char zhuanzhang[19];
-	float jine;
-	printf("请输入想转入的卡号：");
-	scanf("%s",&zhuanzhang);
-	Account *curp=head;
-	while (curp!= NULL)
-	{
-		if(strcmp(curp->username,zhuanzhang)==0)
-		{
-			printf("请输入转账金额："); 
-			scanf("%f",&jine);
-			curp->money+=jine;
-			saveDate();
-			sininOpert();
-			break;
-		}
-		else curp=curp->next;
-	}
-	
-	return 0;
+    int signIn();
+    char Card[30];
+    char lossPass[7];
+    char lossID[20];
+    char very;
+    int flag=0;
+    void saveDate();
+    Account *curp=head;
+    if(language==2)
+    {
+
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                printf("你需要验证身份信息\n");
+
+
+                fflush(stdin);
+                inputmassgage(18,2);//1卡号，2身份，3电话
+                strcpy(lossID,zzz);
+
+                fflush(stdin);
+                printf("%s\n%s",zzz,curp->idCard);
+                if(strcmp(lossID,curp->idCard)==0)
+                {
+                    strcpy(zzz,"\0");
+                    printf("是否确认重置密码？\n\n");
+                    printf("按 1 确认重置\n\n");
+                    printf("按 其他任意键 取消重置并退出\n\n");
+                    printf("请选择你的操作\n");//50034200314569632
+                    scanf("%c",&very);
+                    if(very=='1')
+                    {
+                        n(6);
+                        printf("重置成功，\n");
+                        strcpy(curp->password,zzz);
+                        saveDate();
+                        system("pause");
+                        return 0;
+                    }
+                    else
+                    {
+                        printf("已取消重置\n");
+                        system("pause");
+
+                    }
+
+                }
+                else
+                {
+                    printf("信息不符合,重置失败\n");
+                    system("pause");
+
+                }
+                system("pause");
+
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("该卡号不存在\n");
+            system("pause");
+
+        }
+    }
+    else
+    {
+
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                printf("You need to verify your identity information\n");
+
+
+                fflush(stdin);
+                inputmassgage(18,2);//1卡号，2身份，3电话
+                strcpy(lossID,zzz);
+
+                fflush(stdin);
+                printf("%s\n%s",zzz,curp->idCard);
+                if(strcmp(lossID,curp->idCard)==0)
+                {
+                    strcpy(zzz,"\0");
+                    printf("Are you sure you want to reset your password？\n\n");
+                    printf("Press 1 to confirm the reset.\n\n");
+                    printf("Press any other key to cancel the reset and exit.\n\n");
+                    printf("Please select your operation.\n");//50034200314569632
+                    scanf("%c",&very);
+                    if(very=='1')
+                    {
+                        n(6);
+                        printf("Reset succeeded.，\n");
+                        strcpy(curp->password,zzz);
+                        saveDate();
+                        system("pause");
+                        return 0;
+                    }
+                    else
+                    {
+                        printf("Reset cancelled.\n");
+                        system("pause");
+
+                    }
+
+                }
+                else
+                {
+                    printf("The information does not match, and the reset failed.\n");
+                    system("pause");
+
+                }
+                system("pause");
+
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("The card number does not exist.\n");
+            system("pause");
+
+        }
+    }
+    return 0;
 }
+
+
+int signIn()//登录
+{
+    int sininOpert();
+    char zhanghao[19];
+    char mima[20];
+    char ppp;
+    if(language==2)
+    {
+        char a[100]="请输入账号";
+        char b[50]="请输入密码";
+        int i=0,j=0,k=0;
+        char p;
+        Account *curp=head;
+        printf ("按 1 账号密码登录\n\n");
+        printf ("按 2 忘记密码？重置密码\n\n");
+        printf ("按 3 退出登录\n");
+        printf ("请选择你的操作\n");
+        while(1)
+        {
+            scanf("%c",&p);
+            fflush(stdin);
+            if(p=='1')
+            {
+                break;
+            }
+            else if(p=='2')
+            {
+                sininother();
+                return 0;
+            }
+            else if(p=='3') return 0;
+            else
+            {
+                printf("\n抱歉，我不理解，请重新输入\n");
+            }
+        }
+
+        if(p=='1')
+            while(1)
+            {
+                i=speakread(a);
+                int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+                inputmassgage(18,1);//1卡号，2身份，3电话
+                strcpy(zhanghao,zzz);
+
+                fflush(stdin);
+                curp=head;
+                while (curp!= NULL)
+                {
+                    if(strcmp(curp->username,zhanghao)==0)
+                    {
+                        k=1;
+                        if(strcmp(curp->zhuangtai,"Loss")==0||strcmp(curp->zhuangtai,"Freeze")==0)
+                        {
+
+                            for(i=0; i<5; i++)
+                            {
+                                system("cls");
+                                if(strcmp(curp->zhuangtai,"Loss")==0)
+                                {
+                                    printf("该卡已被挂失，不能正常登录\n");
+                                }
+                                if(strcmp(curp->zhuangtai,"Freeze")==0)
+                                {
+                                    printf("该卡已冻结，不能正常登录\n");
+                                }
+                                printf("5秒后自动返回大厅");
+                                printf("\t%ds(倒计时)\n",5-i);
+                                Sleep(1000);
+                                system("cls");
+                            }
+                            return 0;
+                        }
+                        printf("请输入密码：\n");
+                        i=speakread(b);
+                        n(6);
+
+                        for(i=0; i<6; i++) mima[i]=zzz[i];
+                        j++;
+                        if(j>=3)
+                        {
+                            k=4;
+                            strcpy(curp->zhuangtai,"Freeze");
+
+                            break;
+                        }
+                        if(strcmp(curp->password,mima)==0)
+                        {
+
+                            printf("\n登录成功！\n");
+                            abc=*curp;
+
+                            sininOpert();
+
+                            break;
+                        }
+                    }
+
+                    else curp=curp->next;
+
+                }
+
+                if(k==0)
+                {
+                    if(strlen(zzz)<18) ppp='2';
+                    else
+                    {
+                        printf("该账号不存在\n按 1 重新输入\n按 2 返回大厅\n");
+                        ppp=getch() ;
+                    }
+                    if(ppp=='2')
+                    {
+
+                        for(i=0; i<5; i++)
+                        {
+                            system("cls");
+                            printf("5秒后自动返回大厅");
+                            printf("\t%ds(倒计时)\n",5-i);
+                            Sleep(1000);
+                            system("cls");
+                        }
+                        break;
+                    }
+                    else continue;
+                }
+                if(k==4)
+                {
+                    for(i=0; i<5; i++)
+                    {
+                        system("cls");
+                        printf("连续输错3次密码该卡已冻结，5秒后自动返回大厅\n");
+                        printf("\t%ds(倒计时)\n",5-i);
+                        Sleep(1000);
+                        system("cls");
+                    }
+                    break;
+                }
+            }
+    }
+    else
+    {
+        char a[100]="Please enter the account number.";
+        char b[50]="Please enter a password.";
+        int i=0,j=0,k=0;
+        Account *curp=head;
+        while(1)
+        {
+
+
+
+            i=speakread(a);
+            int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+            inputmassgage(18,1);//1卡号，2身份，3电话
+            strcpy(zhanghao,zzz);
+            fflush(stdin);
+            curp=head;
+            while (curp!= NULL)
+            {
+                if(strcmp(curp->username,zhanghao)==0)
+                {
+                    k=1;
+                    if(strcmp(curp->zhuangtai,"Loss")==0||strcmp(curp->zhuangtai,"Freeze")==0)
+                    {
+
+                        for(i=0; i<5; i++)
+                        {
+                            system("cls");
+                            if(strcmp(curp->zhuangtai,"Loss")==0)
+                            {
+                                printf("The card has been reported lost and cannot be logged in properly\n");
+                            }
+                            if(strcmp(curp->zhuangtai,"Freeze")==0)
+                            {
+                                printf("The card is frozen and does not log in properly\n");
+                            }
+                            printf("Automatically return to the lobby in 5 seconds.\n");
+                            printf("\t%ds(Countdown)\n",5-i);
+                            Sleep(1000);
+                            system("cls");
+                        }
+                        return 0;
+                    }
+                    printf("Please enter a password：\n");
+                    i=speakread(b);
+                    n(6);
+
+                    for(i=0; i<6; i++) mima[i]=zzz[i];
+                    j++;
+                    if(j>=3)
+                    {
+                        k=4;
+                        strcpy(curp->zhuangtai,"Freeze");
+
+                        break;
+                    }
+                    if(strcmp(curp->password,mima)==0)
+                    {
+
+                        printf("\nLogin success！\n");
+                        abc=*curp;
+
+                        sininOpert();
+
+                        break;
+                    }
+                }
+
+                else curp=curp->next;
+
+            }
+
+            if(k==0)
+            {
+                printf("The account number does not exist \n press 1 to re-enter it \n press 2 to return to the lobby.\n");
+                ppp=getch() ;
+                if(ppp=='2')
+                {
+
+                    for(i=0; i<5; i++)
+                    {
+                        system("cls");
+                        printf("Automatically return to the lobby in 5 seconds.\n");
+                        printf("\t%ds(Countdown)\n",5-i);
+                        Sleep(1000);
+                        system("cls");
+                    }
+                    break;
+                }
+                else continue;
+            }
+            if(k==4)
+            {
+                for(i=0; i<5; i++)
+                {
+                    system("cls");
+                    printf("The card has been frozen after inputting the wrong password three times in a row, and will automatically return to the lobby after 5 seconds.");
+                    printf("\t%ds(Countdown)\n",5-i);
+                    Sleep(1000);
+                    system("cls");
+                }
+                break;
+            }
+        }
+    }
+    saveDate();
+    return 0;
+}
+void fz()
+{
+    Account *curp=head;
+    while(curp!=NULL)
+    {
+        if(strcmp(curp->username,abc.username)==0)
+        {
+            *curp=abc;
+            break;
+        }
+        else curp=curp->next;
+    }
+}
+int inputmassgage(int cardxb,int ch)//1卡号，2身份，3电话用于用户输入时的操作
+{
+    char cardmassage[cardxb];
+    int i,j,k,f=0,m;
+ void showMenuChinese();
+    if(language==2)
+    {
+        for(i=0; i<=cardxb; i++)
+        {
+            if(i<=17) m=i+1;
+            else m=i;
+            if(f==0)
+            {
+                system("cls");
+                printf(" / 退出并返回登录界面\n\n");
+                printf("  enter 清空，重新输入\n\n");
+                printf(" 输入满%d位后按 / enter - 之外任意键确认输入\n\n",cardxb);
+                if(ch==1) printf("请输入卡号：\n");
+                if(ch==2) printf("请输入身份证号：");
+                if(ch==3) printf("请输入电话号码：");
+                f=1;
+            }
+
+            cardmassage[i]=getch();
+            system("cls");
+            printf(" / 退出并返回登录界面\n\n");
+            printf(" enter 清空，重新输入\n\n");
+            printf("输入满18位后按 / enter - 之外任意键确认输入\n\n");
+            if(cardmassage[i]!='\b'&&cardmassage[i]!='r'&&cardmassage[i]!='/')
+            {
+                if(i<cardxb) m=i+1;
+                else m=cardxb;
+                if(ch==1) printf("请输入卡号(已输入%d位)：",m);
+                if(ch==2) printf("请输入身份证号(已输入%d位)：",m);
+                if(ch==3) printf("请输入电话号码(已输入%d位)：",m);
+            }
+            else if(cardmassage[i]=='\b')
+            {
+                if(ch==1) printf("请输入卡号(已输入%d位)：",m-2);
+                if(ch==2) printf("请输入身份证号(已输入%d位)：",m-2);
+                if(ch==3) printf("请输入电话号码(已输入%d位)：",m-2);
+            }
+            fflush(stdin);
+            if(cardmassage[i]=='/')
+            {
+                printf("即将退出输入\n");
+                system("pause");
+                showMenuChinese();
+            }
+            if(cardmassage[i]=='\r')
+            {
+                i=-1;
+                f=0;
+            }
+
+            if(cardmassage[i]=='\b')
+            {
+                if(i<=0||i==1) i=-1;
+                else i-=2;
+                for(j=0; j<=i; j++)
+                {
+
+                    printf("%c",cardmassage[j]);
+
+                }
+                continue;
+            }
+            for(j=0; j<=i; j++)
+            {
+                if(cardmassage[j]>='0'&&cardmassage[j]<='9')
+                    printf("%c",cardmassage[j]);
+                else
+                {
+                    printf ("\n只能输入数字！！\n");
+                    printf("1 重新输入\n");
+                    printf("2 退出输入\n");
+
+                    scanf("%d",&k);
+                    fflush(stdin);
+                    if(k==1)
+                    {
+                        i=-1;
+                        f=0;
+                    }
+                    else if(k==2) return 0;
+                    else printf("抱歉，我不明白\n");
+                }
+            }
+
+        }
+    }
+    else
+    {
+        for(i=0; i<=cardxb; i++)
+        {
+            if(i<=17) m=i+1;
+            else m=i;
+            if(f==0)
+            {
+                system("cls");
+
+                printf(" Press enter to clear and re-enter\n\n");
+                printf(" Enter %d digits and press any key except/enter-to confirm the input.\n\n",cardxb);
+                if(ch==1) printf("请输入卡号：\n");
+                if(ch==2) printf("请输入身份证号：");
+                if(ch==3) printf("请输入电话号码：");
+                f=1;
+            }
+
+
+            cardmassage[i]=getch();
+            system("cls");
+
+
+            printf(" Press enter to clear and re-enter\n");
+            printf(" Enter %d digits and press any key except/enter-to confirm the input.\n",cardxb);
+            if(cardmassage[i]!='\b'&&cardmassage[i]!='r'&&cardmassage[i]!='/')
+            {
+                if(i<cardxb) m=i+1;
+                else m=cardxb;
+                if(ch==1) printf("Please enter the card number (%d digits have been entered)：",m);
+                if(ch==2) printf("Please enter your ID number (%d digits have been entered)：",m);
+                if(ch==3) printf("Please enter the phone number (%d digits have been entered)：",m);
+            }
+            else if(cardmassage[i]=='\b')
+            {
+                if(ch==1) printf("Please enter the card number (%d digits have been entered)：",m-2);
+                if(ch==2) printf("Please enter your ID number (%d digits have been entered)：",m-2);
+                if(ch==3) printf("Please enter the phone number (%d digits have been entered)：",m-2);
+            }
+            fflush(stdin);
+            if(cardmassage[i]=='\r')
+            {
+                i=-1;
+                f=0;
+            }
+            if(cardmassage[i]=='/')
+            {
+                return 0;
+            }
+            if(cardmassage[i]=='\b')
+            {
+                if(i==0||i==1) i=-1;
+                else i-=2;
+                for(j=0; j<=i; j++)
+                {
+                    if(i<18)
+                        printf("%c",cardmassage[j]);
+
+                }
+                continue;
+            }
+            for(j=0; j<=i; j++)
+            {
+                if(cardmassage[j]>='0'&&cardmassage[j]<='9')
+                    printf("%c",cardmassage[j]);
+                else
+                {
+                    printf ("\nYou can only enter numbers.！！\n");
+                    printf("1 resume load\n");
+                    printf("2 Exit input\n");
+
+                    scanf("%d",&k);
+                    fflush(stdin);
+                    if(k==1)
+                    {
+                        i=-1;
+                        f=0;
+                    }
+                    else if(k==2) return 0;
+                    else printf("Sorry, I don't understand.\n");
+                }
+            }
+
+        }
+    }
+    cardmassage[cardxb]='\0';
+    printf("\n");
+    strcpy(zzz,cardmassage);
+    return 0;
+}
+int zhuanzhang()//转账，
+{
+    int timetime();
+    char zhuanzhang1[19];
+    float jine;
+    int flag=0;
+    inputmassgage(18,1);//1卡号，2身份，3电话
+    strcpy(zhuanzhang1,zzz);
+
+
+    Account *curp=head;
+    if(language==2)
+    {
+        while (curp!= NULL)
+        {
+            if(strcmp(zhuanzhang1,abc.username)==0)
+            {
+                printf("不能自己向自己转账\n");
+                break;
+            }
+
+            if(strcmp(curp->username,zhuanzhang1)==0)
+            {
+                flag=1;
+                if(strcmp(curp->zhuangtai,"Loss")==0||strcmp(curp->zhuangtai,"Freeze")==0)
+                {
+                    printf("对方卡号为非正常状态，不能进行转账\n\n");
+                    break;
+                }
+                printf("请输入转账金额：");
+                scanf("%f",&jine);
+                if(jine<=abc.money)
+                {
+                    curp->money+=jine;
+                    abc.money-=jine*1.001;
+                    printf("转账成功\n\n");
+                    fz();
+                    if(strcmp(abc.yinhang,curp->yinhang)!=0)
+                    {
+                        printf("因为是跨行转账将扣取%%0.1的手续费\n\n");
+                        time_t timep;
+                        time (&timep);
+                        FILE *fp=fopen("./record.txt","a+");
+                        fprintf(fp,"%s\t转账扣除 transfer accounts\t-%.2f元\t%s\n",abc.username,jine*1.001,buffer);
+                        fprintf(fp,"%s\t收到转账 Received transfer\t+%.2f元\t%s\n",curp->username,jine,buffer);
+
+                        saveDate();
+                        fclose(fp);
+                        return 0;
+                    }
+
+
+                    time_t timep;
+                    time (&timep);
+                    FILE *fp=fopen("./record.txt","a+");
+                    fprintf(fp,"%s\t转账扣除 transfer accounts-\t%.2f\t%s",abc.username,jine,buffer);
+
+                    fprintf(fp,"%s\t收到转账 Received transfer\t+%.2f\t%s",curp->username,jine,buffer);
+                    fclose(fp);
+                }
+                else printf("余额不足!!!!!!!!!!!!!!!!!!!!\n");
+                break;
+            }
+            else curp=curp->next;
+        }
+
+        if(flag==0)
+        {
+            printf("该账户不存在\n");
+        }
+    }
+    else
+    {
+        while (curp!= NULL)
+        {
+            if(strcmp(zhuanzhang1,abc.username)==0)
+            {
+                printf("You can't transfer money to yourself.\n");
+                break;
+            }
+
+            if(strcmp(curp->username,zhuanzhang1)==0)
+            {
+                flag=1;
+                if(strcmp(curp->zhuangtai,"Loss")==0||strcmp(curp->zhuangtai,"Freeze")==0)
+                {
+                    printf("The card number of the opposite party is in abnormal status, and cannot be transferred.\n");
+                    break;
+                }
+                printf("Please enter the transfer amount：");
+                scanf("%f",&jine);
+                if(jine<=abc.money)
+                {
+                    curp->money+=jine;
+                    abc.money-=jine*1.001;
+                    printf("Transfer succeeded.\n\n");
+                    fz();
+                    if(strcmp(abc.yinhang,curp->yinhang)!=0)
+                    {
+                        printf("Because it is an inter-bank transfer, a handling fee of %%0.1 will be deducted.\n\n");
+                        time_t timep;
+                        time (&timep);
+                        FILE *fp=fopen("./record.txt","a+");
+                        fprintf(fp,"%s\t转账扣除\t-%.2f元\t%s\n",abc.username,jine*1.001,buffer);
+                        fprintf(fp,"%s\t到转账\t+%.2f元\t%s\n",curp->username,jine,buffer);
+                        saveDate();
+                        fclose(fp);
+                        return 0;
+                    }
+
+
+                    time_t timep;
+                    time (&timep);
+                    FILE *fp=fopen("./record.txt","a+");
+                    fprintf(fp,"%s\t转账 transfer accounts-%.2f\t%s",abc.username,jine,buffer);
+
+                    fprintf(fp,"%s\t收到转账 Received transfer\t+%.2f\t%s",curp->username,jine,buffer);
+                    fclose(fp);
+                }
+                else printf("Insufficient balance!!!!!!!!!!!!!!!!!!!!\n");
+                break;
+            }
+            else curp=curp->next;
+        }
+
+        if(flag==0)
+        {
+            printf("The account does not exist.\n");
+        }
+    }
+    saveDate();
+    return 0;
+}
+
+
+void mmm()
+{
+    Account *curp=head;
+    int i=0,j=0;
+    FILE *fp1=fopen("./record.txt","r");
+    printf("\n");
+    while (!feof(fp1))
+    {
+        fgets(zzz1,200,fp1);
+        if(feof(fp1)==0)
+        {
+
+            for(i=0; i<18; i++)
+                zzz[i]=zzz1[i];
+            if(strcmp(zzz,abc.username)==0)
+            {
+                printf("\n%s\n",zzz1);
+                j=1;
+            }
+
+        }
+    }
+    if(j==0&&language==2)
+    {
+        printf("\n还没有交易记录\n\n");
+    }
+    if(j==0&&language==1)
+    {
+        printf("\nThere is no transaction record yet.\n\n");
+    }
+}
+
+int breakFreeze()
+{
+    char Card[30];
+    char lossPass[7];
+    char lossID[20];
+    char very;
+    int flag=0,i=0;
+    void saveDate();
+    Account *curp=head;
+    if(language==2)
+    {
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                if(strcmp(curp->zhuangtai,"Freeze")!=0)
+                {
+
+                    for(i=0; i<5; i++)
+                    {
+                        system("cls");
+                        printf("\n该卡不是冻结卡\n");
+                        printf("5秒后自动返回大厅");
+                        printf("\t%ds(倒计时)\n",5-i);
+                        Sleep(1000);
+                        system("cls");
+                    }
+                    return 0;
+                }
+                printf("你需要验证身份信息\n");
+
+                printf("请输入密码\n");
+                n(6);
+                fflush(stdin);
+                if(strcmp(zzz,curp->password)==0)
+                {
+
+                    inputmassgage(18,2);//1卡号，2身份，3电话
+                    strcpy(lossID,zzz);
+
+                    fflush(stdin);
+                    if(strcmp(lossID,curp->idCard)==0)
+                    {
+                        printf("是否确认解冻？\n\n");
+                        printf("按 1 确认解冻\n\n");
+                        printf("按 其他任意键 取消解冻并退出\n\n");
+                        printf("请选择你的操作\n");
+                        scanf("%c",&very);
+                        if(very=='1')
+                        {
+
+                            printf("解冻成功，\n");
+                            strcpy(curp->zhuangtai,"normal");
+                            saveDate();
+                            break ;
+                        }
+                        else
+                        {
+                            printf("已取消解冻银行卡\n");
+                        }
+
+                    }
+                }
+                break ;
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("该卡号不存在\n");
+
+        }
+    }
+    else
+    {
+        int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+        inputmassgage(18,1);//1卡号，2身份，3电话
+        strcpy(Card,zzz);
+        fflush(stdin);
+        while(curp!=NULL)
+        {
+            if(strcmp(curp->username,Card)==0)
+            {
+                flag=1;
+                if(strcmp(curp->zhuangtai,"Freeze")!=0)
+                {
+
+                    for(i=0; i<5; i++)
+                    {
+                        system("cls");
+                        printf("\nThis card is not a frozen card.\n");
+                        printf("Automatically return to the lobby in 5 seconds.");
+                        printf("\t%ds(Countdown)\n",5-i);
+                        Sleep(1000);
+                        system("cls");
+                    }
+                    return 0;
+                }
+                printf("You need to verify your identity information\n");
+
+                printf("Please enter a password.\n");
+                n(6);
+                fflush(stdin);
+                if(strcmp(zzz,curp->password)==0)
+                {
+
+                    inputmassgage(18,2);//1卡号，2身份，3电话
+                    strcpy(lossID,zzz);
+
+                    fflush(stdin);
+                    if(strcmp(lossID,curp->idCard)==0)
+                    {
+                        printf("Confirm unfreezing？\n\n");
+                        printf("1 press to confirm thawing.\n\n");
+                        printf("Press any other key to unfreeze and exit.\n\n");
+                        printf("请选择你的操作\n");
+                        scanf("%c",&very);
+                        if(very=='1')
+                        {
+
+                            printf("Thawing succeeded.，\n");
+                            strcpy(curp->zhuangtai,"normal");
+                            saveDate();
+                            break ;
+                        }
+                        else
+                        {
+                            printf("Unfreezing bank card has been canceled.\n");
+                        }
+
+                    }
+                }
+                break ;
+
+            }
+            else curp=curp->next;
+        }
+        if(flag==0)
+        {
+            printf("The card number does not exist.\n");
+
+        }
+    }
+    system("pause");
+    return 0;
+}
+int findcard()
+{
+
+    char findtele[18];
+    Account *curp=head;
+    int flag=0;
+    int inputmassgage(int cardxb,int ch);//1卡号，2身份，3电话
+    if(language==2)printf("请输入身份证号码\n");
+    else printf("Please enter the ID number.\n");
+    inputmassgage(18,2);
+
+    strcpy(findtele,zzz);
+    while(curp!=NULL)
+    {
+        if(strcmp(curp->idCard,findtele)==0)
+        {
+            flag=1;
+            printf("\n%s\t%s\n",curp->username,curp->yinhang);
+
+        }
+        curp=curp->next;
+    }
+    if(flag==0)
+    {
+        if(language==2) printf("抱歉，未查询到该电话的卡号");
+        else printf("Sorry, the card number of this phone was not found.");
+    }
+    system("pause");
+    return 0;
+}
+
+/*
+李云龙	13224932365	500234200311145698	888888888888888888	111111	1000.00	农业银行	normal
+二营长	13254698754	500342003145696320	666666666666666666	000000	5000.00	建设银行	normal
+密码	11111111111	500234200311146666	643401882377842019	000000	0.00	建设银行	normal
+
+*/
 void showMenuChinese()
 {
-	while(1)
-	{
-		system("cls");
-		printf("按1，开户\n");
-		printf("按2，登录\n");
-		printf("按3，退出\n");
-		printf("按4，返回首页\n");
-		printf("按5，结束程序\n");
-		printf("按6，挂失银行卡\n");
-		int n;
-		scanf("%d",&n);
-		fflush(stdin);
-		system("cls");
-		switch(n) 
-		{
-			case 1:
-				bbb();
-				saveDate();
-				break;
-			case 2:
-				signIn();
-				
-				break;
-			case 3:signOut();break;
-			case 4:aaa();break;
-			case 5:exit(0);break;
-			case 6:break;
-		}
-	
-	}
+    if(language==2)
+    {
+        while(1)
+        {
+            system("cls");
+
+            printf("==============================================\n");
+            printf("|                   菜单                     |\n");
+            printf("==============================================\n");
+            printf("| 按 - 返回首页                按 + 查询卡号 |\n");
+            printf("==============================================\n");
+            printf("|     按1: 开户                              |\n");
+            printf("----------------------------------------------\n");
+            printf("|     按2: 登录                              |\n");
+            printf("----------------------------------------------\n");
+            printf("|     按3: 解冻银行卡                        |\n");
+            printf("----------------------------------------------\n");
+            printf("|     按6: 挂失银行卡                        |\n");
+            printf("==============================================\n");
+            printf("请选择你想进行的操作:");
+            char n;
+            n=getch();
+            fflush(stdin);
+            system("cls");
+            switch(n)
+            {
+            case '1':
+                bbb();
+                saveDate();
+                break;
+            case '2':
+                signIn();
+                break;
+            case '3':
+                breakFreeze();
+                break;
+            case '-':
+                aaa();
+                break;
+            case '+':
+                findcard();
+                break;
+            case '6':
+                lossCard();
+                break;
+            default:
+                printf("抱歉，我不理解，请重新输入\n");
+                system("pause>nul");
+                break;
+            }
+        }
+    }
+    else
+    {
+        while(1)
+        {
+            system("cls");
+
+            printf("=========================================================\n");
+            printf("|                   menu                                |\n");
+            printf("=========================================================\n");
+            printf("| - Return to the home page       + Query card number   |\n");
+            printf("=========================================================\n");
+            printf("|     1: open an account                                |\n");
+            printf("---------------------------------------------------------\n");
+            printf("|     2: log in                                         |\n");
+            printf("---------------------------------------------------------n");
+            printf("|     3: Unfreeze bank card                             |\n");
+            printf("---------------------------------------------------------\n");
+            printf("|     6: Lost bank card                                 |\n");
+            printf("=========================================================\n");
+            printf("Please select the operation you want to do.:");
+            char n;
+            n=getch();
+            fflush(stdin);
+            system("cls");
+            switch(n)
+            {
+            case '1':
+                bbb();
+                saveDate();
+                break;
+            case '2':
+                signIn();
+                break;
+            case '3':
+
+                break;
+            case '-':
+                aaa();
+                break;
+            case '+':
+                exit(0);
+                break;
+            case '6':
+                lossCard();
+                break;
+            default:
+                printf("Sorry, I don't understand, please re-enter.\n");
+                system("pause>nul");
+                break;
+            }
+        }
+    }
+
+
+}
+
+
+int timetime()//获取时间
+{
+    time_t n;
+    time (&n);
+    char buffer1 [128];
+    time_t timep;
+    struct tm *p;
+    time (&timep);
+    p=gmtime(&timep);
+    p->tm_hour+=8;
+    strftime (buffer,sizeof(buffer),"%Y/%m/%d %H:%M:%S",p);//
+    printf("%s\n",buffer);
+    return 0;
+}
+
+
+int withdraw()//取款
+{
+    float num=0,flag =0;
+    int g;
+    Account *curp=head;
+
+    while (curp!= NULL)
+    {
+        if(strcmp(curp->username,abc.username)==0)
+        {
+            if(language==2)
+            {
+                printf("\n\n余额:%f\n",curp->money);
+                printf("请输入取款金额：");
+            }
+            else
+            {
+                printf("\n\nremaining sum:%f\n",curp->money);
+                printf("Please enter the withdrawal amount：");
+            }
+            scanf("%f",&num);
+            if(num<=curp->money)
+            {
+                flag=1;
+
+                g=addATM(num,2);
+                if(language==2&&g==0 )
+                {
+                    curp->money-=num;
+                    abc=*curp;
+                    printf("取款成功，余额:%f\n",curp->money);
+                    timetime();
+
+                    FILE *fp=fopen("./record.txt","a+");
+                    fprintf(fp,"%s\t取款 withdraw\t-%.2f\t%s\n",abc.username,num,buffer);
+                    fclose(fp);
+                }
+                else if(g==0)
+                {
+                    curp->money-=num;
+                    abc=*curp;
+                    printf("Withdrawal successful, balance:%f\n",curp->money);
+                    timetime();
+
+                    FILE *fp=fopen("./record.txt","a+");
+                    fprintf(fp,"%s\t取款 withdraw\t-%.2f\t%s\n",abc.username,num,buffer);
+                    fclose(fp);
+                }
+
+            }
+            break;
+        }
+        else curp=curp->next;
+    }
+    if(flag==0)
+    {
+        printf("余额不足，余额\nInsufficient balance\n:%f\n",curp->money);
+    }
+    saveDate();
+    return 0;
+}
+
+
+int deposit()//存款
+{
+    float num=0,flag =0;
+    Account *curp=head;
+
+    while (curp!= NULL)
+    {
+        if(strcmp(curp->username,abc.username)==0)
+        {
+            if(language==2) printf("\n\n请一次性放入现金，仅能存面值100元的纸币（输入存款金额）：\n");
+            else printf("\n\nPlease deposit cash at one time, and only bank notes with face value of 100 yuan can be deposited (enter the deposit amount).：\n");
+            scanf("%f",&num);
+            if((num-(int)(num))==0&&(int)(num)%100==0)
+            {
+                flag=1;
+                curp->money+=num;
+                abc=*curp;
+                addATM(num,1);
+                printf("存款成功\nDeposit success\n");
+                time_t timep;
+                time (&timep);
+                timetime();
+                FILE *fp=fopen("./record.txt","a+");//978985891376289596
+                fprintf(fp,"%s\t存款deposit\t+%.2f元\t%s\n",abc.username,num,buffer);
+                fclose(fp);//978985891376289596
+            }
+            break;
+        }
+        else curp=curp->next;
+    }
+    if(flag==0)
+    {
+        printf("只能存100元面值的纸币\n Only banknotes with 100 yuan denomination can be deposited.\n");
+    }
+    saveDate();
+    return 0;
+}
+
+
+int newpassword()//修改密码
+{
+    if(language==2)
+    {
+        char new1[7];
+        char new2[7];
+        Account *curp=head;
+        printf("\n请输入密码：\n");
+        fflush(stdin);
+        n(6);
+
+        strcpy(new1,zzz);
+        fflush(stdin);
+        system("cls");
+        printf("\n再次验证密码\n");
+        if(strcmp(abc.password,new1)==0)
+        {
+            printf("新密码不能与旧密码相同，修改失败\n");
+            return 0;
+        }
+
+        n(6);
+        strcpy(new2,zzz);
+
+        if(strcmp(new2,new1)!=0)
+        {
+            printf("两次密码不相同，修改失败\n");
+            return 0;
+        }
+        fflush(stdin);
+        if(strcmp(new1,new2)==0)
+        {
+            printf("\n修改成功\n");
+            while(curp!=NULL)
+            {
+                if(strcmp(curp->username,abc.username)==0)
+                {
+                    strcpy(curp->password,new2);
+                    strcpy(abc.password,new2);
+
+                    saveDate();
+                    break;
+                }
+                curp=curp->next;
+            }
+
+            system("pause");
+        }
+    }
+    else
+    {
+        char new1[7];
+        char new2[7];
+        Account *curp=head;
+        printf("\nPlease enter a password.：\n");
+        fflush(stdin);
+        n(6);
+
+        strcpy(new1,zzz);
+        fflush(stdin);
+        system("cls");
+        printf("\nVerify the password again.\n");
+        if(strcmp(abc.password,new1)==0)
+        {
+            printf("The new password cannot be the same as the old password, and the modification failed.\n");
+            return 0;
+        }
+
+        n(6);
+        strcpy(new2,zzz);
+
+        if(strcmp(new2,new1)!=0)
+        {
+            printf("Two passwords are different, and modification failed.\n");
+            return 0;
+        }
+        fflush(stdin);
+        if(strcmp(new1,new2)==0)
+        {
+            printf("\nModified successfully.\n");
+            while(curp!=NULL)
+            {
+                if(strcmp(curp->username,abc.username)==0)
+                {
+                    strcpy(curp->password,new2);
+                    strcpy(abc.password,new2);
+
+                    saveDate();
+                    break;
+                }
+                curp=curp->next;
+            }
+
+            system("pause");
+        }
+    }
+    return 0;
+}
+
+int show()
+{
+    FILE* fp=fopen("./ATMuse.txt","r");
+
+    if(fp==NULL)
+    {
+        return 0;
+    }
+    int i=0;
+    char showatm[100];
+    while(i<22)
+    {
+        i++;
+        fgets(showatm,100,fp);
+        printf("%s",showatm);
+    }
+    fclose(fp);
+    return 0;
 }
 int sininOpert()
 {
-	char opert='\0';
-	while(1)
-	{
-	 
-	printf("\n按 1 转账\n");//本行，跨行 
-	printf("按 2 现金取款\n"); 
-	printf("按 3 现金存款\n");
-	printf("按 4 历史记录查询\n");
-	printf("按 5 余额查询\n");
-	printf("按 6 修改密码\n");
-	printf("按 7 账户信息查询\n");
-	printf("按 8 更换绑定的电话号码\n");
-	printf("按 9 退出账号\n");
-	printf("请输入你想要进行的操作;");
-	opert=getch();
-	fflush(stdin);
-	switch(opert) 
-		{
-			case '1':
-				zhuanzhang();//转账 
-				
-				break;
-			case '2':
-				
-				
-				break;
-			case '3':break;
-			case '4':break;
-			case '5':break;
-			case '6':break;
-			case '7':break;
-			case '8':break;
-			case '9':
-				abc=nnn;
-				showMenuChinese();
-			break;
-			default:break;
-		}
-	}
-	
-	
-}
-int signOut()
-{
+    char opert='\0';
 
-	return 0;
+    while(1)
+    {
+        system("pause");
+        system("cls");
+        if(language==2)
+        {
+            printf("\n==============================================\n");
+            printf("|    *按 1 转账                              |\n");//本行，跨行
+            printf("----------------------------------------------\n");
+            printf("|    *按 2 现金取款                          |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 3 现金存款                          |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 4 历史记录查询                      |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 5 修改密码                          |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 6 余额查询                          |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 7 账户信息查询                      |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 8 更换绑定的电话号码                |\n");
+            printf("----------------------------------------------\n");
+            printf("|    *按 9 退出账号                          |\n");
+            printf("==============================================\n");
+            printf("请输入你想要进行的操作;");
+        }
+        else
+        {
+            printf("\n==============================================\n");
+            printf("|     1 transfer by press                    |\n");//本行，跨行
+            printf("----------------------------------------------\n");
+            printf("|     2 Withdraw money by cash               |\n");
+            printf("----------------------------------------------\n");
+            printf("|     3 Deposit by cash                      |\n");
+            printf("----------------------------------------------\n");
+            printf("|     4 query by history                     |\n");
+            printf("----------------------------------------------\n");
+            printf("|     5 change password by Press             |\n");
+            printf("----------------------------------------------\n");
+            printf("|     6 Query by balance                     |\n");
+            printf("----------------------------------------------\n");
+            printf("|     7 Query by account informatio          |\n");
+            printf("----------------------------------------------\n");
+            printf("|     8 change the bound phone number        |\n");
+            printf("----------------------------------------------\n");
+            printf("|     9 exit the account                     |\n");
+            printf("==============================================\n");
+            printf("Please enter the operation you want to perform:");
+        }
+        opert=getch();
+        fflush(stdin);
+        switch(opert)
+        {
+        case '1':
+            zhuanzhang();//转账
+
+            break;
+        case '2':
+            withdraw(); //取款
+
+            break;
+        case '3':
+            deposit();//现金存款
+            break;
+        case '4':
+            mmm();
+            break;
+        case '5':
+            newpassword();
+            break;
+        case '6':
+            if(language==2) printf("\n该账户余额为：%.2f\n",abc.money);
+            else printf("\nThe account balance is：%.2f\n",abc.money);
+
+            break;
+        case '7':
+            if(language==2) printf("\n姓名：%s\n电话：%s\n身份证号：%s\n银行卡号：%s\n密码：%s\n余额：%0.2f\n%s\n",abc.name,abc.tel,abc.idCard,abc.username,abc.password,abc.money,abc.yinhang);
+            else  printf("\nName：%s\tTelephone：%s\nID number：%s\nBank card number：%s\tPnassword：%s\tNremaining sum：%0.2f\n%s\n",abc.name,abc.tel,abc.idCard,abc.username,abc.password,abc.money,abc.yinhang);
+            break;
+        case '8':
+            break;
+        case '9':
+            abc=nnn;//退出账号，nnn为空
+            showMenuChinese();//
+            break;
+        default:
+            sininOpert();
+            break;
+        }
+    }
 }
+
 
 int main()
 {
-	int status=loadData();//加载数据 
-	aaa();
-	showMenuChinese();
-	
-	if(status==1)
-	{
-		printf("加载成功！\n");
-	}
-	else
-	{
-		printf("加载失败！\n");
-	}
-	printLinkedList();
-	saveDate();
-	return 0;
+    int status=loadData();//加载数据
+    timetime();
+    int a=lixi();//计算利息
+    saveDate();//保存数据
+    aaa();
+    saveDate();//保存数据
+    return 0;
+
 }
